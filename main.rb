@@ -1,46 +1,21 @@
-# use JSON
 require 'json'
-require 'yaml'
 require 'thor'
-require 'fileutils'
-
-$CONFIG_PATH = File.join(ENV['HOME'], '.scrman', 'config.yml')
-$SCRIPTS_PATH = File.join(ENV['HOME'], '.scrman', 'scripts')
-$RUBY_SCRIPTS_PATH = File.join($SCRIPTS_PATH, 'ruby')
-
-for path in [$CONFIG_PATH, $SCRIPTS_PATH, $RUBY_SCRIPTS_PATH]
-    unless File.exist? path
-        FileUtils.mkdir_p(path)
-    end
-end
-
-unless File.exist?($CONFIG_PATH)
-    FileUtils.mkdir_p(File.dirname($CONFIG_PATH))
-    File.write($CONFIG_PATH, { 
-        'version' => '0.0.1',
-        'editor' => 'vim',
-        'bin' => File.join(ENV['HOME'], '.local', 'bin'),
-    }.to_yaml)
-end
-
-$CONFIG = YAML.load_file($CONFIG_PATH)
-$BIN = $CONFIG['bin']
-
-def open_editor(file)
-    editor = $CONFIG['editor'] || ENV['EDITOR'] || 'vim'
-    system "#{editor} #{file}"
-end
+require_relative 'lib/helpers'
+require_relative 'lib/config'
+require_relative 'lib/language'
 
 class Main < Thor
-    desc "ruby", "Create a new ruby script"
-    option :link, type: :boolean, default: false, desc: "install to the bin"
-    option :edit, type: :boolean, default: true, desc: "open the script in the editor"
-    def ruby(name)
-        shebang = "#!/usr/bin/env ruby\n"
-        path = "#{$RUBY_SCRIPTS_PATH}/#{name}.rb"
+    desc "new", "Create a new script"
+    option :lang, aliases: :l,  type: :string, default: $CONFIG.default_language, desc: "the language of the script"
+    option :link, aliases: :b, type: :boolean, default: true, desc: "install to the bin"
+    option :edit, aliases: :e, type: :boolean, default: true, desc: "open the script in the editor"
+    def new(name)
+        lang = find_language(options[:lang]) || raise("Language #{options[:lang]} not found")
+        path = lang.path(name)
 
+        ensure_dir lang.scripts_path
         unless File.exist? path
-            File.write(path, shebang)
+            File.write(path, lang.shebang)
             FileUtils.chmod("+x", path)
         end
 
