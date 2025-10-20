@@ -6,11 +6,10 @@ lib_dir = File.expand_path('../lib', __dir__)
 $LOAD_PATH.unshift(lib_dir) unless $LOAD_PATH.include?(lib_dir)
 
 require 'thor'
-require 'json'
-require 'csv'
 require 'helpers'
 require 'config'
 require 'language'
+require 'formatter'
 
 class Scrman < Thor
   desc "ls [PATTERN]", "List installed scripts"
@@ -45,25 +44,10 @@ class Scrman < Thor
     # Sort scripts by name
     scripts.sort_by! { |s| s[:name] }
     
-    # Output in requested format
-    case format.downcase
-    when 'json'
-      puts JSON.pretty_generate(scripts)
-    when 'yml', 'yaml'
-      require 'yaml'
-      puts scripts.to_yaml
-    when 'csv'
-      require 'csv'
-      CSV do |csv|
-        csv << ['name', 'language']
-        scripts.each { |s| csv << [s[:name], s[:language]] }
-      end
-    when 'tsv'
-      puts "name\tlanguage"
-      scripts.each { |s| puts "#{s[:name]}\t#{s[:language]}" }
-    else
-      raise "Unsupported output format: #{format}"
-    end
+    # Use formatter utility
+    formatter = Formatter.new(format)
+    headers = ['name', 'language']
+    puts formatter.format(scripts, headers)
   end
 
   desc "new NAME", "Create a new script"
