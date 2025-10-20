@@ -1,11 +1,17 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'csv'
 require 'yaml'
 
+begin
+  require 'csv'
+  CSV_AVAILABLE = true
+rescue LoadError
+  CSV_AVAILABLE = false
+end
+
 class Formatter
-  SUPPORTED_FORMATS = %w[tsv json yml yaml csv].freeze
+  SUPPORTED_FORMATS = CSV_AVAILABLE ? %w[tsv json yml yaml csv].freeze : %w[tsv json yml yaml].freeze
 
   def initialize(format = 'tsv')
     @format = format.downcase
@@ -44,6 +50,10 @@ class Formatter
   end
 
   def format_csv(data, headers)
+    unless CSV_AVAILABLE
+      raise "CSV format requires the 'csv' gem. Please install it or use tsv, json, or yaml format instead."
+    end
+    
     return '' if data.empty?
 
     CSV.generate do |csv|
