@@ -29,14 +29,10 @@ class Language
     end
 end
 
-languages_array = [
-    Language.new('ruby', 'rb'),
-    Language.new('python', 'py'),
-    Language.new('javascript', 'js'),
-    Language.new('typescript', 'ts'),
-    Language.new('zsh', 'sh'),
-    Language.new('bash', 'sh'),
-]
+# Load languages from config
+languages_array = $CONFIG.languages.map do |name, config|
+    Language.new(name, config['extension'])
+end
 
 $languages = languages_array.map { |lang| [lang.name, lang] }.to_h
 $languages_by_extension = languages_array.map { |lang| [lang.extension, lang] }.to_h

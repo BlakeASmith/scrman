@@ -1,0 +1,99 @@
+# scrman - Script Manager
+
+A command-line tool to create and manage scripts in multiple languages.
+
+## Features
+
+- 📝 Create scripts in multiple languages (Ruby, Python, JavaScript, TypeScript, Bash, Zsh)
+- 🔗 Automatically link scripts to your bin directory
+- ✏️ Open scripts in your editor immediately after creation
+- ⚙️ Configurable via YAML config file
+
+## Usage
+
+### Create a new script
+
+```bash
+# Create a Ruby script (default language)
+scrman new my_script
+
+# Create a Python script
+scrman new my_script --lang python
+
+# Create a script without linking to bin
+scrman new my_script --no-link
+
+# Create a script without opening in editor
+scrman new my_script --no-edit
+```
+
+### Options
+
+- `-l, --lang LANGUAGE` - Specify the language (ruby, python, javascript, typescript, bash, zsh)
+- `-b, --link` - Link the script to your bin directory (default: true)
+- `-e, --edit` - Open the script in your editor (default: true)
+
+## Configuration
+
+On first run, scrman creates a configuration file at `~/.scrman/config.yml`:
+
+```yaml
+version: 0.0.1
+editor: vim
+bin: ~/.local/bin
+languages:
+  ruby:
+    interpreter: ruby
+    extension: rb
+  python:
+    interpreter: python
+    extension: py
+  javascript:
+    interpreter: node
+    extension: js
+  typescript:
+    interpreter: bun run
+    extension: ts
+  bash:
+    interpreter: bash
+    extension: sh
+  zsh:
+    interpreter: zsh
+    extension: sh
+default_language: ruby
+```
+
+Scripts are stored in `~/.scrman/scripts/` organized by language. You can add your own languages,
+or repeats of the same language using a different interpreter (under a different name)
+
+For example, to specifically use `node`
+```yaml
+languages:
+  node:
+    interpreter: "node"
+    extension: "js" 
+```
+
+## Installation
+
+### Homebrew (macOS/Linux)
+
+```bash
+# Or directly from URL:
+brew install https://raw.githubusercontent.com/yourusername/homebrew-tap/main/Formula/scrman.rb
+```
+
+### From Source
+
+```bash
+git clone https://github.com/yourusername/scrman.git
+cd scrman
+bundle install
+chmod +x bin/scrman
+ln -s $(pwd)/bin/scrman /usr/local/bin/scrman
+```
+
+## License
+
+MIT
+

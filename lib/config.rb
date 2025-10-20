@@ -15,22 +15,28 @@ unless File.exist?($CONFIG_PATH)
         'bin' => File.join(ENV['HOME'], '.local', 'bin'),
         'languages' => {
             'ruby' => {
-                'interpreter' => 'ruby'
+                'interpreter' => 'ruby',
+                'extension' => 'rb'
             },
             'python' => {
-                'interpreter' => 'python'
+                'interpreter' => 'python',
+                'extension' => 'py'
             },
             'javascript' => {
-                'interpreter' => 'node'
+                'interpreter' => 'node',
+                'extension' => 'js'
             },
             'typescript' => {
-                'interpreter' => 'bun run'
+                'interpreter' => 'bun run',
+                'extension' => 'ts'
             },
             'bash' => {
-                'interpreter' => 'bash'
+                'interpreter' => 'bash',
+                'extension' => 'sh'
             },
             'zsh' => {
-                'interpreter' => 'zsh'
+                'interpreter' => 'zsh',
+                'extension' => 'sh'
             }
         },
         'default_language' => 'ruby'
@@ -56,6 +62,10 @@ class Config
 
     def default_language
         return @config['default_language']
+    end
+
+    def languages
+        return @config['languages'] || {}
     end
 end
 
