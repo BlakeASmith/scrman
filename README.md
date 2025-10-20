@@ -79,8 +79,8 @@ languages:
 ### Homebrew (macOS/Linux)
 
 ```bash
-# Or directly from URL:
-brew install https://raw.githubusercontent.com/BlakeASmith/homebrew-tap/main/Formula/scrman.rb
+brew tap BlakeASmith/tap
+brew install scrman
 ```
 
 ### From Source
