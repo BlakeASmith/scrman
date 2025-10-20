@@ -82,51 +82,15 @@ class Scrman < Thor
   option :lang, aliases: :l, type: :string, desc: "the language of the script"
   option :force, aliases: :f, type: :boolean, default: false, desc: "force removal without confirmation"
   def rm(name)
-    # Find the script across all languages or specific language
-    script_found = false
-    script_path = nil
-    script_lang = nil
+    result = find_script(name, options[:lang])
     
-    if options[:lang]
-      # Look in specific language directory
-      lang_config = $CONFIG.languages[options[:lang]]
-      if lang_config
-        lang = Language.new(options[:lang], lang_config['extension'])
-        path = lang.path(name)
-        if File.exist?(path)
-          script_found = true
-          script_path = path
-          script_lang = options[:lang]
-        end
-      end
-    else
-      # Search across all language directories
-      Dir.glob(File.join($SCRIPTS_PATH, '*')).each do |lang_dir|
-        next unless File.directory?(lang_dir)
-        
-        lang_name = File.basename(lang_dir)
-        lang_config = $CONFIG.languages[lang_name]
-        next unless lang_config
-        
-        extension = lang_config['extension']
-        path = File.join(lang_dir, "#{name}.#{extension}")
-        
-        if File.exist?(path)
-          script_found = true
-          script_path = path
-          script_lang = lang_name
-          break
-        end
-      end
-    end
-    
-    unless script_found
+    unless result[:found]
       abort "Script '#{name}' not found#{options[:lang] ? " in language '#{options[:lang]}'" : ''}"
     end
     
     # Confirm removal unless force is specified
     unless options[:force]
-      print "Are you sure you want to remove script '#{name}' (#{script_lang})? [y/N] "
+      print "Are you sure you want to remove script '#{name}' (#{result[:language]})? [y/N] "
       response = STDIN.gets.chomp.downcase
       unless response == 'y' || response == 'yes'
         puts "Operation cancelled."
@@ -135,8 +99,8 @@ class Scrman < Thor
     end
     
     # Remove the script file
-    FileUtils.rm(script_path)
-    puts "Removed script file: #{script_path}"
+    FileUtils.rm(result[:path])
+    puts "Removed script file: #{result[:path]}"
     
     # Remove symlink from bin directory
     bin_path = "#{$BIN}/#{name}"
@@ -145,56 +109,20 @@ class Scrman < Thor
       puts "Removed symlink: #{bin_path}"
     end
     
-    puts "Script '#{name}' (#{script_lang}) has been removed successfully."
+    puts "Script '#{name}' (#{result[:language]}) has been removed successfully."
   end
 
   desc "edit NAME", "Open an existing script in the editor"
   option :lang, aliases: :l, type: :string, desc: "the language of the script"
   def edit(name)
-    # Find the script across all languages or specific language
-    script_found = false
-    script_path = nil
-    script_lang = nil
+    result = find_script(name, options[:lang])
     
-    if options[:lang]
-      # Look in specific language directory
-      lang_config = $CONFIG.languages[options[:lang]]
-      if lang_config
-        lang = Language.new(options[:lang], lang_config['extension'])
-        path = lang.path(name)
-        if File.exist?(path)
-          script_found = true
-          script_path = path
-          script_lang = options[:lang]
-        end
-      end
-    else
-      # Search across all language directories
-      Dir.glob(File.join($SCRIPTS_PATH, '*')).each do |lang_dir|
-        next unless File.directory?(lang_dir)
-        
-        lang_name = File.basename(lang_dir)
-        lang_config = $CONFIG.languages[lang_name]
-        next unless lang_config
-        
-        extension = lang_config['extension']
-        path = File.join(lang_dir, "#{name}.#{extension}")
-        
-        if File.exist?(path)
-          script_found = true
-          script_path = path
-          script_lang = lang_name
-          break
-        end
-      end
-    end
-    
-    unless script_found
+    unless result[:found]
       abort "Script '#{name}' not found#{options[:lang] ? " in language '#{options[:lang]}'" : ''}"
     end
     
-    puts "Opening script '#{name}' (#{script_lang}) in editor..."
-    open_editor(script_path)
+    puts "Opening script '#{name}' (#{result[:language]}) in editor..."
+    open_editor(result[:path])
   end
 end
 
