@@ -77,6 +77,76 @@ class Scrman < Thor
       open_editor path
     end
   end
+
+  desc "rm NAME", "Remove a script and its symlink"
+  option :lang, aliases: :l, type: :string, desc: "the language of the script"
+  option :force, aliases: :f, type: :boolean, default: false, desc: "force removal without confirmation"
+  def rm(name)
+    # Find the script across all languages or specific language
+    script_found = false
+    script_path = nil
+    script_lang = nil
+    
+    if options[:lang]
+      # Look in specific language directory
+      lang_config = $CONFIG.languages[options[:lang]]
+      if lang_config
+        lang = Language.new(options[:lang], lang_config['extension'])
+        path = lang.path(name)
+        if File.exist?(path)
+          script_found = true
+          script_path = path
+          script_lang = options[:lang]
+        end
+      end
+    else
+      # Search across all language directories
+      Dir.glob(File.join($SCRIPTS_PATH, '*')).each do |lang_dir|
+        next unless File.directory?(lang_dir)
+        
+        lang_name = File.basename(lang_dir)
+        lang_config = $CONFIG.languages[lang_name]
+        next unless lang_config
+        
+        extension = lang_config['extension']
+        path = File.join(lang_dir, "#{name}.#{extension}")
+        
+        if File.exist?(path)
+          script_found = true
+          script_path = path
+          script_lang = lang_name
+          break
+        end
+      end
+    end
+    
+    unless script_found
+      abort "Script '#{name}' not found#{options[:lang] ? " in language '#{options[:lang]}'" : ''}"
+    end
+    
+    # Confirm removal unless force is specified
+    unless options[:force]
+      print "Are you sure you want to remove script '#{name}' (#{script_lang})? [y/N] "
+      response = STDIN.gets.chomp.downcase
+      unless response == 'y' || response == 'yes'
+        puts "Operation cancelled."
+        exit 0
+      end
+    end
+    
+    # Remove the script file
+    FileUtils.rm(script_path)
+    puts "Removed script file: #{script_path}"
+    
+    # Remove symlink from bin directory
+    bin_path = "#{$BIN}/#{name}"
+    if File.exist?(bin_path) || File.symlink?(bin_path)
+      FileUtils.rm(bin_path)
+      puts "Removed symlink: #{bin_path}"
+    end
+    
+    puts "Script '#{name}' (#{script_lang}) has been removed successfully."
+  end
 end
 
 Scrman.start(ARGV)
