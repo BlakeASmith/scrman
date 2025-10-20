@@ -9,3 +9,4 @@ gem "ruby-lsp", group: :development
 # gem "rails"
 gem "thor"
 gem "yaml"
+gem "csv"
