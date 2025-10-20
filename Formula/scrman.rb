@@ -1,10 +1,10 @@
 class Scrman < Formula
   desc "Script manager - Create and manage scripts in multiple languages"
-  homepage "https://github.com/yourusername/scrman"
-  url "https://github.com/yourusername/scrman/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "" # Will be filled when you create a release: shasum -a 256 v0.1.0.tar.gz
+  homepage "https://github.com/BlakeASmith/scrman"
+  url "https://github.com/BlakeASmith/scrman/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "395c97f0a17899c6ac76ad984274ea90bfb46d7d40e165fb1a0a065510f90238"
   license "MIT"
-  head "https://github.com/yourusername/scrman.git", branch: "main"
+  head "https://github.com/BlakeASmith/scrman.git", branch: "main"
 
   depends_on "ruby"
 

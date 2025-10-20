@@ -80,13 +80,13 @@ languages:
 
 ```bash
 # Or directly from URL:
-brew install https://raw.githubusercontent.com/yourusername/homebrew-tap/main/Formula/scrman.rb
+brew install https://raw.githubusercontent.com/BlakeASmith/homebrew-tap/main/Formula/scrman.rb
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/scrman.git
+git clone https://github.com/BlakeASmith/scrman.git
 cd scrman
 bundle install
 chmod +x bin/scrman
