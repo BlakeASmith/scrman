@@ -6,11 +6,66 @@ lib_dir = File.expand_path('../lib', __dir__)
 $LOAD_PATH.unshift(lib_dir) unless $LOAD_PATH.include?(lib_dir)
 
 require 'thor'
+require 'json'
+require 'csv'
 require 'helpers'
 require 'config'
 require 'language'
 
 class Scrman < Thor
+  desc "ls [PATTERN]", "List installed scripts"
+  option :lang, aliases: :l, type: :string, desc: "filter by language"
+  option :format, aliases: :f, type: :string, desc: "output format (tsv, json, yml, csv)"
+  def ls(pattern = '*')
+    format = options[:format] || $CONFIG.output_format
+    lang_filter = options[:lang]
+    
+    scripts = []
+    
+    # Get all language directories
+    Dir.glob(File.join($SCRIPTS_PATH, '*')).each do |lang_dir|
+      next unless File.directory?(lang_dir)
+      
+      lang_name = File.basename(lang_dir)
+      next if lang_filter && lang_name != lang_filter
+      
+      # Find language configuration
+      lang_config = $CONFIG.languages[lang_name]
+      next unless lang_config
+      
+      extension = lang_config['extension']
+      
+      # Find scripts matching pattern
+      Dir.glob(File.join(lang_dir, "#{pattern}.#{extension}")).each do |script_path|
+        script_name = File.basename(script_path, ".#{extension}")
+        scripts << { name: script_name, language: lang_name }
+      end
+    end
+    
+    # Sort scripts by name
+    scripts.sort_by! { |s| s[:name] }
+    
+    # Output in requested format
+    case format.downcase
+    when 'json'
+      puts JSON.pretty_generate(scripts)
+    when 'yml', 'yaml'
+      require 'yaml'
+      puts scripts.to_yaml
+    when 'csv'
+      require 'csv'
+      CSV do |csv|
+        csv << ['name', 'language']
+        scripts.each { |s| csv << [s[:name], s[:language]] }
+      end
+    when 'tsv'
+      puts "name\tlanguage"
+      scripts.each { |s| puts "#{s[:name]}\t#{s[:language]}" }
+    else
+      raise "Unsupported output format: #{format}"
+    end
+  end
+
   desc "new NAME", "Create a new script"
   option :lang, aliases: :l, type: :string, desc: "the language of the script"
   option :link, aliases: :b, type: :boolean, default: true, desc: "install to the bin"
