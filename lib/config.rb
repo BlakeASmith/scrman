@@ -39,7 +39,8 @@ unless File.exist?($CONFIG_PATH)
                 'extension' => 'sh'
             }
         },
-        'default_language' => 'ruby'
+        'default_language' => 'ruby',
+        'output_format' => 'tsv'
     }.to_yaml)
 end
 
@@ -66,6 +67,10 @@ class Config
 
     def languages
         return @config['languages'] || {}
+    end
+
+    def output_format
+        return @config['output_format'] || 'tsv'
     end
 end
 
